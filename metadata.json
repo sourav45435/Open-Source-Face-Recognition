@@ -1,0 +1,5 @@
+{
+  "name": "Open Source Face Recognition SDK",
+  "description": "Web-migrated face detection, landmark extraction, aligned feature embedding, and face similarity comparison service.",
+  "requestFramePermissions": []
+}

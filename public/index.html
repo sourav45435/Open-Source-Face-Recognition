@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Source Face Recognition SDK</title>
+  <meta name="description" content="Web-migrated face detection, landmark extraction, aligned feature embedding, and face similarity comparison service." />
+  <meta property="og:title" content="Open Source Face Recognition SDK" />
+  <meta property="og:description" content="Web-migrated face detection, landmark extraction, aligned feature embedding, and face similarity comparison service." />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-alt: #0b1220;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    header p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    main {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+    .controls {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    label {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    input[type="number"], select {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.875rem;
+    }
+    input[type="file"] {
+      font-size: 0.8rem;
+      color: var(--muted);
+      max-width: 210px;
+    }
+    button {
+      background: var(--accent);
+      color: #082f49;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.15s ease, background 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: #334155;
+      color: var(--text);
+    }
+    button.active-tab {
+      background: var(--accent);
+      color: #082f49;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .card.inspected-ring {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .canvas-wrap {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8px;
+      position: relative;
+    }
+    canvas {
+      max-width: 100%;
+      max-height: 360px;
+      height: auto;
+      display: block;
+    }
+    #inspectorCanvas {
+      max-height: 460px;
+      cursor: crosshair;
+    }
+    .meta-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .aligned-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      background: #020617;
+      flex-shrink: 0;
+    }
+    .aligned-large {
+      width: 112px;
+      height: 112px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      background: #020617;
+      flex-shrink: 0;
+    }
+    .result-banner {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .score-val {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+    .verdict {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .verdict.same { background: rgba(34, 197, 94, 0.18); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.45); }
+    .verdict.diff { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.45); }
+    .verdict.stale { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 600; }
+    pre {
+      margin: 0;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.78rem;
+      overflow: auto;
+      color: #cbd5e1;
+      max-height: 140px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .error-msg {
+      color: #fca5a5;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    /* Inspector Section */
+    .inspector-layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 1.15fr) minmax(300px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 880px) {
+      .inspector-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .toggle-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.83rem;
+    }
+    .toggle-bar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .face-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .face-chip {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 11px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .face-chip.selected {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: var(--accent);
+      color: #7dd3fc;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+      gap: 10px;
+    }
+    .stat-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .stat-label {
+      font-size: 0.74rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .sub-panel {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .sub-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sub-panel-header h3 {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    .region-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .region-tab {
+      background: #1e293b;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 4px 9px;
+      font-size: 0.76rem;
+      border-radius: 5px;
+    }
+    .region-tab.active {
+      background: var(--accent);
+      color: #082f49;
+      border-color: var(--accent);
+    }
+    .landmarks-scroll {
+      max-height: 175px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #020617;
+    }
+    .landmarks-scroll table th,
+    .landmarks-scroll table td {
+      padding: 5px 8px;
+      font-size: 0.78rem;
+    }
+    #embeddingChart {
+      width: 100%;
+      height: 54px;
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Open Source Face Recognition SDK</h1>
+      <p>Face Detection, 68-Point Landmarks, 128×128 Alignment &amp; Similarity Comparison</p>
+    </div>
+    <div class="control-group">
+      <button id="compareBtn">Run Face Comparison</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls">
+      <div class="control-group">
+        <label for="thresholdInput">Similarity Threshold (%):</label>
+        <input id="thresholdInput" type="number" min="0" max="100" step="1" value="75" />
+        <label for="maxFacesInput">Max Faces:</label>
+        <input id="maxFacesInput" type="number" min="1" max="10" step="1" value="5" />
+      </div>
+      <div id="errorBox" class="error-msg"></div>
+    </section>
+
+    <section class="result-banner" id="resultBanner">
+      <div>
+        <div style="color: var(--muted); font-size: 0.82rem;">Similarity Score (<code>get_similarity</code>)</div>
+        <div class="score-val" id="scoreDisplay">—</div>
+      </div>
+      <div>
+        <div style="color: var(--muted); font-size: 0.82rem;">Comparison Result</div>
+        <div id="verdictDisplay" class="verdict">Ready</div>
+      </div>
+      <div style="color: var(--muted); font-size: 0.82rem;" id="timingDisplay">Select samples or upload two images</div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card" id="card1">
+        <div class="card-header">
+          <h2>Image 1</h2>
+          <div class="control-group">
+            <select id="sampleSelect1" aria-label="Sample image 1"></select>
+            <input type="file" id="fileInput1" accept="image/*" aria-label="Upload image 1" />
+            <button class="secondary" id="inspectBtn1">Inspect</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="canvas1"></canvas>
+        </div>
+        <div class="meta-row" id="meta1"></div>
+        <pre id="embed1">Embedding preview will appear here...</pre>
+      </div>
+
+      <div class="card" id="card2">
+        <div class="card-header">
+          <h2>Image 2</h2>
+          <div class="control-group">
+            <select id="sampleSelect2" aria-label="Sample image 2"></select>
+            <input type="file" id="fileInput2" accept="image/*" aria-label="Upload image 2" />
+            <button class="secondary" id="inspectBtn2">Inspect</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="canvas2"></canvas>
+        </div>
+        <div class="meta-row" id="meta2"></div>
+        <pre id="embed2">Embedding preview will appear here...</pre>
+      </div>
+    </section>
+
+    <!-- Dedicated Interactive Face Inspector Section -->
+    <section class="card" id="inspectorSection">
+      <div class="card-header">
+        <div>
+          <h2 id="inspectorTitle">Face Inspector (GetImageInfo)</h2>
+          <div style="color: var(--muted); font-size: 0.82rem;" id="inspectorSubtitle">
+            Inspect bounding boxes, 68-point facial landmarks, head pose, 128×128 alignment, and embeddings
+          </div>
+        </div>
+        <div class="control-group">
+          <button class="secondary active-tab" id="inspectSource1Btn">Image 1</button>
+          <button class="secondary" id="inspectSource2Btn">Image 2</button>
+          <button class="secondary" id="inspectSourceStandaloneBtn" style="display: none;">Custom Upload</button>
+          <input type="file" id="inspectorFileInput" accept="image/*" aria-label="Upload image directly to inspector" />
+          <button id="runInspectBtn">Run Inspect</button>
+        </div>
+      </div>
+
+      <div class="toggle-bar">
+        <label><input type="checkbox" id="toggleBoxes" checked /> Bounding Boxes</label>
+        <label><input type="checkbox" id="toggleLandmarks" checked /> 68 Landmarks</label>
+        <label><input type="checkbox" id="toggleMesh" checked /> Facial Contour Mesh</label>
+        <label><input type="checkbox" id="toggleIndices" /> Landmark Indices</label>
+        <span style="margin-left: auto; color: var(--muted); font-size: 0.78rem;">
+          Tip: Click any detected face box on the canvas to select it
+        </span>
+      </div>
+
+      <div class="face-chips" id="inspectorFaceChips">
+        <span style="color: var(--muted); font-size: 0.83rem;">Run Inspect on an image to list detected faces.</span>
+      </div>
+
+      <div class="inspector-layout">
+        <div style="display: grid; gap: 10px;">
+          <div class="canvas-wrap" style="min-height: 320px;">
+            <canvas id="inspectorCanvas"></canvas>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted);">
+            <span id="inspectorImageStats">Resolution: —</span>
+            <button class="secondary" id="copyFullJsonBtn">Copy Face JSON</button>
+          </div>
+        </div>
+
+        <div style="display: grid; gap: 12px; min-width: 0;">
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3>Selected Face Overview</h3>
+              <span id="inspectorSelectedBadge" style="font-size: 0.78rem; color: var(--accent); font-weight: 600;">—</span>
+            </div>
+            <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+              <img id="inspectorAlignedImg" class="aligned-large" alt="128x128 aligned face crop" />
+              <div class="stat-grid" style="flex: 1; min-width: 190px;">
+                <div class="stat-box">
+                  <div class="stat-label">Confidence</div>
+                  <div class="stat-value" id="statScore">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Bounding Box</div>
+                  <div class="stat-value" id="statBbox" style="font-size: 0.84rem;">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Yaw / Pitch / Roll</div>
+                  <div class="stat-value" id="statPose" style="font-size: 0.84rem;">—</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Orientation</div>
+                  <div class="stat-value" id="statOrientation">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3>128-Dim Aligned Embedding</h3>
+              <button class="secondary" id="copyEmbeddingBtn" style="padding: 4px 10px; font-size: 0.76rem;">Copy Vector</button>
+            </div>
+            <canvas id="embeddingChart" width="512" height="54"></canvas>
+            <pre id="inspectorEmbeddingText" style="max-height: 92px;">—</pre>
+          </div>
+
+          <div class="sub-panel">
+            <div class="sub-panel-header">
+              <h3>68 Facial Landmarks</h3>
+              <div class="region-tabs" id="landmarkRegionTabs">
+                <button class="region-tab active" data-region="all">All (68)</button>
+                <button class="region-tab" data-region="jaw">Jaw (17)</button>
+                <button class="region-tab" data-region="brows">Brows (10)</button>
+                <button class="region-tab" data-region="nose">Nose (9)</button>
+                <button class="region-tab" data-region="eyes">Eyes (12)</button>
+                <button class="region-tab" data-region="mouth">Mouth (20)</button>
+              </div>
+            </div>
+            <div class="landmarks-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Region</th>
+                    <th>X (px)</th>
+                    <th>Y (px)</th>
+                  </tr>
+                </thead>
+                <tbody id="landmarksTableBody">
+                  <tr><td colspan="4" style="color: var(--muted);">No landmarks loaded.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Session Comparison History</h2>
+        <button class="secondary" id="refreshHistoryBtn">Refresh</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Image 1</th>
+            <th>Image 2</th>
+            <th>Similarity</th>
+            <th>Threshold</th>
+            <th>Verdict</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="6" style="color: var(--muted);">No comparisons yet.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      1: { sample: '1.jpg', imageBase64: null, label: '1.jpg', srcUrl: '/samples/1.jpg', info: null },
+      2: { sample: '2.png', imageBase64: null, label: '2.png', srcUrl: '/samples/2.png', info: null },
+      standalone: { sample: undefined, imageBase64: null, label: 'Custom Upload', srcUrl: '', info: null },
+    };
+
+    const inspectorState = {
+      source: 1, // 1 | 2 | 'standalone'
+      selectedFaceIdx: 0,
+      regionFilter: 'all',
+    };
+
+    const sampleSelect1 = document.getElementById('sampleSelect1');
+    const sampleSelect2 = document.getElementById('sampleSelect2');
+    const fileInput1 = document.getElementById('fileInput1');
+    const fileInput2 = document.getElementById('fileInput2');
+    const inspectorFileInput = document.getElementById('inspectorFileInput');
+    const thresholdInput = document.getElementById('thresholdInput');
+    const maxFacesInput = document.getElementById('maxFacesInput');
+    const compareBtn = document.getElementById('compareBtn');
+    const inspectBtn1 = document.getElementById('inspectBtn1');
+    const inspectBtn2 = document.getElementById('inspectBtn2');
+    const runInspectBtn = document.getElementById('runInspectBtn');
+    const errorBox = document.getElementById('errorBox');
+
+    const toggleBoxes = document.getElementById('toggleBoxes');
+    const toggleLandmarks = document.getElementById('toggleLandmarks');
+    const toggleMesh = document.getElementById('toggleMesh');
+    const toggleIndices = document.getElementById('toggleIndices');
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showError(msg) {
+      if (!msg) {
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+      } else {
+        errorBox.style.display = 'block';
+        errorBox.textContent = msg;
+      }
+    }
+
+    function markComparisonStale() {
+      const verdictEl = document.getElementById('verdictDisplay');
+      verdictEl.textContent = 'Images Updated — Re-run Compare';
+      verdictEl.className = 'verdict stale';
+    }
+
+    function getLandmarkRegion(index) {
+      if (index <= 16) return { key: 'jaw', label: 'Jawline', color: '#38bdf8' };
+      if (index <= 26) return { key: 'brows', label: index <= 21 ? 'Left Brow' : 'Right Brow', color: '#a78bfa' };
+      if (index <= 35) return { key: 'nose', label: 'Nose', color: '#34d399' };
+      if (index <= 47) return { key: 'eyes', label: index <= 41 ? 'Left Eye' : 'Right Eye', color: '#facc15' };
+      return { key: 'mouth', label: 'Mouth', color: '#fb7185' };
+    }
+
+    function drawContourPolyline(ctx, landmarks, startIdx, endIdx, closed, color, lineWidth) {
+      if (landmarks.length < (endIdx + 1) * 2) return;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.beginPath();
+      ctx.moveTo(landmarks[startIdx * 2], landmarks[startIdx * 2 + 1]);
+      for (let i = startIdx + 1; i <= endIdx; i++) {
+        ctx.lineTo(landmarks[i * 2], landmarks[i * 2 + 1]);
+      }
+      if (closed) ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCanvasForSource(canvasEl, slotData, options) {
+      const {
+        selectedFaceIdx = 0,
+        showBoxes = true,
+        showLandmarks = true,
+        showMesh = false,
+        showIndices = false,
+        highlightSelected = false,
+      } = options || {};
+
+      const src = slotData.imageBase64 || slotData.srcUrl;
+      if (!src) {
+        const ctx = canvasEl.getContext('2d');
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        return;
+      }
+
+      const ctx = canvasEl.getContext('2d');
+      const img = new Image();
+      img.onerror = () => showError(`Unable to render image: ${slotData.label}`);
+      img.onload = () => {
+        canvasEl.width = img.naturalWidth;
+        canvasEl.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+
+        const info = slotData.info;
+        if (!info || !Array.isArray(info.faces)) return;
+
+        info.faces.forEach((face, idx) => {
+          const isSelected = idx === selectedFaceIdx;
+          const [x1, y1, x2, y2] = face.bbox;
+          const baseColor = highlightSelected
+            ? (isSelected ? '#38bdf8' : '#22c55e')
+            : (idx === 0 ? '#38bdf8' : '#22c55e');
+
+          if (showBoxes) {
+            ctx.save();
+            ctx.strokeStyle = baseColor;
+            ctx.lineWidth = Math.max(2, Math.round(canvasEl.width / (isSelected && highlightSelected ? 140 : 190)));
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+            const fontSize = Math.max(12, Math.round(canvasEl.width / 36));
+            ctx.font = `bold ${fontSize}px sans-serif`;
+            const label = `Face #${idx + 1} (${(face.score * 100).toFixed(1)}%)`;
+            const textW = ctx.measureText(label).width;
+            const labelY = Math.max(fontSize + 6, y1 - 4);
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.78)';
+            ctx.fillRect(x1, labelY - fontSize - 2, textW + 10, fontSize + 6);
+            ctx.fillStyle = baseColor;
+            ctx.fillText(label, x1 + 5, labelY - 1);
+            ctx.restore();
+          }
+
+          if (showMesh) {
+            const meshWidth = Math.max(1.2, canvasEl.width / 420);
+            drawContourPolyline(ctx, face.landmarks, 0, 16, false, 'rgba(56, 189, 248, 0.85)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 17, 21, false, 'rgba(167, 139, 250, 0.9)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 22, 26, false, 'rgba(167, 139, 250, 0.9)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 27, 30, false, 'rgba(52, 211, 153, 0.9)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 31, 35, false, 'rgba(52, 211, 153, 0.9)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 36, 41, true, 'rgba(250, 204, 21, 0.95)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 42, 47, true, 'rgba(250, 204, 21, 0.95)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 48, 59, true, 'rgba(251, 113, 133, 0.9)', meshWidth);
+            drawContourPolyline(ctx, face.landmarks, 60, 67, true, 'rgba(251, 113, 133, 0.75)', meshWidth);
+          }
+
+          if (showLandmarks) {
+            const radius = Math.max(1.5, canvasEl.width / 260);
+            for (let i = 0; i < face.landmarks.length; i += 2) {
+              const lmIdx = i / 2;
+              const region = getLandmarkRegion(lmIdx);
+              ctx.fillStyle = highlightSelected ? region.color : '#facc15';
+              ctx.beginPath();
+              ctx.arc(face.landmarks[i], face.landmarks[i + 1], radius, 0, Math.PI * 2);
+              ctx.fill();
+
+              if (showIndices && isSelected && lmIdx % 2 === 0) {
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = `${Math.max(9, Math.round(canvasEl.width / 80))}px monospace`;
+                ctx.fillText(String(lmIdx), face.landmarks[i] + 3, face.landmarks[i + 1] - 2);
+              }
+            }
+          }
+        });
+      };
+      img.src = src;
+    }
+
+    function drawAnnotations(slot, info) {
+      state[slot].info = info;
+      drawCanvasForSource(document.getElementById(`canvas${slot}`), state[slot], {
+        selectedFaceIdx: 0,
+        showBoxes: true,
+        showLandmarks: true,
+        showMesh: false,
+        showIndices: false,
+        highlightSelected: false,
+      });
+    }
+
+    function renderMeta(slot, info) {
+      const metaEl = document.getElementById(`meta${slot}`);
+      const embedEl = document.getElementById(`embed${slot}`);
+      if (!info || !info.faces.length) {
+        metaEl.innerHTML = '<span>No faces detected.</span>';
+        embedEl.textContent = '—';
+        return;
+      }
+      const primary = info.faces[0];
+      metaEl.innerHTML = `
+        <img class="aligned-preview" src="${primary.alignedImage}" alt="Aligned 128x128 face" />
+        <div>
+          <div><strong>Faces:</strong> ${info.count} &nbsp;|&nbsp; <strong>Box:</strong> [${primary.bbox.join(', ')}]</div>
+          <div><strong>Pose:</strong> yaw ${primary.pose.yaw}°, pitch ${primary.pose.pitch}°, roll ${primary.pose.roll}°</div>
+          <div><strong>Time:</strong> ${info.processingTimeMs} ms &nbsp;|&nbsp; <strong>Image:</strong> ${info.width}×${info.height}</div>
+        </div>
+      `;
+      embedEl.textContent = JSON.stringify({
+        dimensions: primary.embedding.length,
+        preview: primary.embedding.slice(0, 10),
+      });
+    }
+
+    function getPoseOrientationLabel(pose) {
+      const parts = [];
+      if (pose.yaw > 8) parts.push('Turned Right');
+      else if (pose.yaw < -8) parts.push('Turned Left');
+      else parts.push('Frontal');
+
+      if (Math.abs(pose.roll) > 8) {
+        parts.push(pose.roll > 0 ? 'Tilted CW' : 'Tilted CCW');
+      }
+      return parts.join(' · ');
+    }
+
+    function drawEmbeddingFingerprint(embedding) {
+      const chart = document.getElementById('embeddingChart');
+      const ctx = chart.getContext('2d');
+      ctx.clearRect(0, 0, chart.width, chart.height);
+      if (!embedding || !embedding.length) return;
+
+      const midY = chart.height / 2;
+      ctx.strokeStyle = '#334155';
+      ctx.beginPath();
+      ctx.moveTo(0, midY);
+      ctx.lineTo(chart.width, midY);
+      ctx.stroke();
+
+      const maxAbs = Math.max(0.05, ...embedding.map((v) => Math.abs(v)));
+      const barW = chart.width / embedding.length;
+      embedding.forEach((v, i) => {
+        const normH = (Math.abs(v) / maxAbs) * (midY - 4);
+        ctx.fillStyle = v >= 0 ? '#38bdf8' : '#f472b6';
+        if (v >= 0) {
+          ctx.fillRect(i * barW, midY - normH, Math.max(1, barW - 0.8), normH);
+        } else {
+          ctx.fillRect(i * barW, midY, Math.max(1, barW - 0.8), normH);
+        }
+      });
+    }
+
+    function renderLandmarksTable(face) {
+      const tbody = document.getElementById('landmarksTableBody');
+      if (!face || !Array.isArray(face.landmarks) || !face.landmarks.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color: var(--muted);">No landmarks loaded.</td></tr>';
+        return;
+      }
+      const rows = [];
+      for (let i = 0; i < face.landmarks.length; i += 2) {
+        const lmIdx = i / 2;
+        const region = getLandmarkRegion(lmIdx);
+        if (inspectorState.regionFilter !== 'all' && region.key !== inspectorState.regionFilter) {
+          continue;
+        }
+        rows.push(`
+          <tr>
+            <td>#${lmIdx}</td>
+            <td><span style="color:${region.color};font-weight:600;">${region.label}</span></td>
+            <td>${face.landmarks[i]}</td>
+            <td>${face.landmarks[i + 1]}</td>
+          </tr>
+        `);
+      }
+      tbody.innerHTML = rows.join('') || '<tr><td colspan="4" style="color: var(--muted);">No landmarks in this filter.</td></tr>';
+    }
+
+    function renderInspector() {
+      const srcKey = inspectorState.source;
+      const slotData = state[srcKey];
+      const info = slotData?.info;
+
+      document.getElementById('card1').classList.toggle('inspected-ring', srcKey === 1);
+      document.getElementById('card2').classList.toggle('inspected-ring', srcKey === 2);
+      document.getElementById('inspectSource1Btn').classList.toggle('active-tab', srcKey === 1);
+      document.getElementById('inspectSource2Btn').classList.toggle('active-tab', srcKey === 2);
+      const standaloneBtn = document.getElementById('inspectSourceStandaloneBtn');
+      standaloneBtn.style.display = state.standalone.imageBase64 ? 'inline-block' : 'none';
+      standaloneBtn.classList.toggle('active-tab', srcKey === 'standalone');
+
+      const sourceLabel = srcKey === 'standalone' ? slotData.label : `Image ${srcKey} (${slotData.label})`;
+      document.getElementById('inspectorTitle').textContent = `Face Inspector — ${sourceLabel}`;
+
+      if (info && inspectorState.selectedFaceIdx >= info.faces.length) {
+        inspectorState.selectedFaceIdx = 0;
+      }
+
+      drawCanvasForSource(document.getElementById('inspectorCanvas'), slotData, {
+        selectedFaceIdx: inspectorState.selectedFaceIdx,
+        showBoxes: toggleBoxes.checked,
+        showLandmarks: toggleLandmarks.checked,
+        showMesh: toggleMesh.checked,
+        showIndices: toggleIndices.checked,
+        highlightSelected: true,
+      });
+
+      const chipsEl = document.getElementById('inspectorFaceChips');
+      if (!info || !info.faces.length) {
+        chipsEl.innerHTML = '<span style="color: var(--muted); font-size: 0.83rem;">No faces detected for this image yet. Click Run Inspect.</span>';
+        document.getElementById('inspectorImageStats').textContent = 'Resolution: —';
+        document.getElementById('inspectorSelectedBadge').textContent = '—';
+        document.getElementById('inspectorAlignedImg').removeAttribute('src');
+        document.getElementById('statScore').textContent = '—';
+        document.getElementById('statBbox').textContent = '—';
+        document.getElementById('statPose').textContent = '—';
+        document.getElementById('statOrientation').textContent = '—';
+        document.getElementById('inspectorEmbeddingText').textContent = '—';
+        drawEmbeddingFingerprint([]);
+        renderLandmarksTable(null);
+        return;
+      }
+
+      document.getElementById('inspectorImageStats').textContent =
+        `Resolution: ${info.width}×${info.height} px • Faces detected: ${info.count} • Processing: ${info.processingTimeMs} ms`;
+
+      chipsEl.innerHTML = info.faces
+        .map((face, idx) => {
+          const w = face.bbox[2] - face.bbox[0];
+          const h = face.bbox[3] - face.bbox[1];
+          const activeClass = idx === inspectorState.selectedFaceIdx ? 'selected' : '';
+          return `<button class="face-chip ${activeClass}" data-face-idx="${idx}">
+            Face #${idx + 1} · ${(face.score * 100).toFixed(1)}% · ${w}×${h}px
+          </button>`;
+        })
+        .join('');
+
+      chipsEl.querySelectorAll('.face-chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          inspectorState.selectedFaceIdx = Number(btn.getAttribute('data-face-idx')) || 0;
+          renderInspector();
+        });
+      });
+
+      const face = info.faces[inspectorState.selectedFaceIdx];
+      document.getElementById('inspectorSelectedBadge').textContent =
+        `Face #${inspectorState.selectedFaceIdx + 1} of ${info.count}`;
+      document.getElementById('inspectorAlignedImg').src = face.alignedImage;
+      document.getElementById('statScore').textContent = `${(face.score * 100).toFixed(2)}%`;
+      document.getElementById('statBbox').textContent = `[${face.bbox.join(', ')}]`;
+      document.getElementById('statPose').textContent =
+        `${face.pose.yaw}° / ${face.pose.pitch}° / ${face.pose.roll}°`;
+      document.getElementById('statOrientation').textContent = getPoseOrientationLabel(face.pose);
+
+      drawEmbeddingFingerprint(face.embedding);
+      document.getElementById('inspectorEmbeddingText').textContent = JSON.stringify(face.embedding);
+      renderLandmarksTable(face);
+    }
+
+    async function inspectSingle(slot, options = {}) {
+      const { openInInspector = true, scrollIntoView = false } = options;
+      showError('');
+      const targetBtn = slot === 1 ? inspectBtn1 : slot === 2 ? inspectBtn2 : runInspectBtn;
+      const origText = targetBtn.textContent;
+      targetBtn.disabled = true;
+      targetBtn.textContent = 'Inspecting...';
+
+      try {
+        const res = await fetch('/api/face/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sample: state[slot].sample,
+            imageBase64: state[slot].imageBase64,
+            faceMaxCount: Number(maxFacesInput.value) || 5,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to inspect image');
+
+        state[slot].info = data;
+        if (slot === 1 || slot === 2) {
+          drawAnnotations(slot, data);
+          renderMeta(slot, data);
+        }
+
+        if (openInInspector) {
+          inspectorState.source = slot;
+          inspectorState.selectedFaceIdx = 0;
+          renderInspector();
+          if (scrollIntoView) {
+            document.getElementById('inspectorSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        targetBtn.disabled = false;
+        targetBtn.textContent = origText;
+      }
+    }
+
+    async function runComparison() {
+      showError('');
+      compareBtn.disabled = true;
+      compareBtn.textContent = 'Comparing...';
+      try {
+        const res = await fetch('/api/face/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image1: {
+              sample: state[1].sample,
+              imageBase64: state[1].imageBase64,
+              label: state[1].label,
+            },
+            image2: {
+              sample: state[2].sample,
+              imageBase64: state[2].imageBase64,
+              label: state[2].label,
+            },
+            threshold: Number(thresholdInput.value) || 75,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Comparison failed');
+
+        drawAnnotations(1, data.faces1);
+        renderMeta(1, data.faces1);
+        drawAnnotations(2, data.faces2);
+        renderMeta(2, data.faces2);
+
+        if (inspectorState.source === 1 || inspectorState.source === 2) {
+          renderInspector();
+        }
+
+        document.getElementById('scoreDisplay').textContent = `${data.similarity.toFixed(2)}%`;
+        const verdictEl = document.getElementById('verdictDisplay');
+        verdictEl.textContent = data.isSamePerson ? 'Same Person' : 'Different Person';
+        verdictEl.className = `verdict ${data.isSamePerson ? 'same' : 'diff'}`;
+        document.getElementById('timingDisplay').textContent =
+          `Threshold: ${data.threshold}% • Processed in ${data.processingTimeMs} ms`;
+
+        await loadHistory();
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        compareBtn.disabled = false;
+        compareBtn.textContent = 'Run Face Comparison';
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch('/api/history');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load history');
+        const tbody = document.getElementById('historyBody');
+        if (!data.records || !data.records.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="color: var(--muted);">No comparisons yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.records
+          .map(
+            (r) => `
+          <tr>
+            <td>${escapeHtml(r.label1)}</td>
+            <td>${escapeHtml(r.label2)}</td>
+            <td><strong>${r.similarity.toFixed(2)}%</strong></td>
+            <td>${r.threshold}%</td>
+            <td>${r.isSamePerson ? 'Same Person' : 'Different Person'}</td>
+            <td>${new Date(r.createdAt).toLocaleTimeString()}</td>
+          </tr>`
+          )
+          .join('');
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function wireSlot(slot, selectEl, fileEl, inspectBtn) {
+      selectEl.addEventListener('change', () => {
+        const name = selectEl.value;
+        state[slot] = {
+          sample: name,
+          imageBase64: null,
+          label: name,
+          srcUrl: `/samples/${name}`,
+          info: null,
+        };
+        fileEl.value = '';
+        markComparisonStale();
+        inspectSingle(slot, { openInInspector: inspectorState.source === slot || true, scrollIntoView: false });
+      });
+
+      fileEl.addEventListener('change', () => {
+        const file = fileEl.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state[slot] = {
+            sample: undefined,
+            imageBase64: reader.result,
+            label: file.name,
+            srcUrl: reader.result,
+            info: null,
+          };
+          markComparisonStale();
+          inspectSingle(slot, { openInInspector: true, scrollIntoView: false });
+        };
+        reader.readAsDataURL(file);
+      });
+
+      inspectBtn.addEventListener('click', () => {
+        inspectSingle(slot, { openInInspector: true, scrollIntoView: true });
+      });
+    }
+
+    function wireInspectorControls() {
+      document.getElementById('inspectSource1Btn').addEventListener('click', () => {
+        inspectorState.source = 1;
+        inspectorState.selectedFaceIdx = 0;
+        if (!state[1].info) {
+          inspectSingle(1, { openInInspector: true });
+        } else {
+          renderInspector();
+        }
+      });
+
+      document.getElementById('inspectSource2Btn').addEventListener('click', () => {
+        inspectorState.source = 2;
+        inspectorState.selectedFaceIdx = 0;
+        if (!state[2].info) {
+          inspectSingle(2, { openInInspector: true });
+        } else {
+          renderInspector();
+        }
+      });
+
+      document.getElementById('inspectSourceStandaloneBtn').addEventListener('click', () => {
+        if (!state.standalone.imageBase64) return;
+        inspectorState.source = 'standalone';
+        inspectorState.selectedFaceIdx = 0;
+        if (!state.standalone.info) {
+          inspectSingle('standalone', { openInInspector: true });
+        } else {
+          renderInspector();
+        }
+      });
+
+      inspectorFileInput.addEventListener('change', () => {
+        const file = inspectorFileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.standalone = {
+            sample: undefined,
+            imageBase64: reader.result,
+            label: file.name,
+            srcUrl: reader.result,
+            info: null,
+          };
+          inspectSingle('standalone', { openInInspector: true });
+        };
+        reader.readAsDataURL(file);
+      });
+
+      runInspectBtn.addEventListener('click', () => {
+        inspectSingle(inspectorState.source, { openInInspector: true });
+      });
+
+      [toggleBoxes, toggleLandmarks, toggleMesh, toggleIndices].forEach((el) => {
+        el.addEventListener('change', renderInspector);
+      });
+
+      document.getElementById('inspectorCanvas').addEventListener('click', (e) => {
+        const canvas = e.currentTarget;
+        const slotData = state[inspectorState.source];
+        const info = slotData?.info;
+        if (!info || !info.faces.length) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / Math.max(1, rect.width);
+        const scaleY = canvas.height / Math.max(1, rect.height);
+        const cx = (e.clientX - rect.left) * scaleX;
+        const cy = (e.clientY - rect.top) * scaleY;
+
+        const hitIdx = info.faces.findIndex((f) => {
+          const [x1, y1, x2, y2] = f.bbox;
+          return cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2;
+        });
+
+        if (hitIdx !== -1 && hitIdx !== inspectorState.selectedFaceIdx) {
+          inspectorState.selectedFaceIdx = hitIdx;
+          renderInspector();
+        }
+      });
+
+      document.getElementById('landmarkRegionTabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-region]');
+        if (!btn) return;
+        inspectorState.regionFilter = btn.getAttribute('data-region');
+        document.querySelectorAll('#landmarkRegionTabs .region-tab').forEach((t) => {
+          t.classList.toggle('active', t === btn);
+        });
+        const face = state[inspectorState.source]?.info?.faces?.[inspectorState.selectedFaceIdx];
+        renderLandmarksTable(face);
+      });
+
+      async function copyWithFeedback(btn, text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          const prev = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = prev; }, 1400);
+        } catch {
+          showError('Clipboard access unavailable in this browser context.');
+        }
+      }
+
+      document.getElementById('copyEmbeddingBtn').addEventListener('click', (e) => {
+        const face = state[inspectorState.source]?.info?.faces?.[inspectorState.selectedFaceIdx];
+        if (!face) return;
+        copyWithFeedback(e.currentTarget, JSON.stringify(face.embedding));
+      });
+
+      document.getElementById('copyFullJsonBtn').addEventListener('click', (e) => {
+        const info = state[inspectorState.source]?.info;
+        if (!info) return;
+        const clean = {
+          count: info.count,
+          width: info.width,
+          height: info.height,
+          processingTimeMs: info.processingTimeMs,
+          faces: info.faces.map((f) => ({
+            bbox: f.bbox,
+            score: f.score,
+            pose: f.pose,
+            landmarksCount: f.landmarks.length / 2,
+            landmarks: f.landmarks,
+            embedding: f.embedding,
+          })),
+        };
+        copyWithFeedback(e.currentTarget, JSON.stringify(clean, null, 2));
+      });
+    }
+
+    async function init() {
+      try {
+        const res = await fetch('/api/samples');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load samples');
+        const optionsHtml = (data.samples || [])
+          .map((s) => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`)
+          .join('');
+        sampleSelect1.innerHTML = optionsHtml;
+        sampleSelect2.innerHTML = optionsHtml;
+        if (data.samples.some((s) => s.name === '1.jpg')) sampleSelect1.value = '1.jpg';
+        if (data.samples.some((s) => s.name === '2.png')) sampleSelect2.value = '2.png';
+
+        wireSlot(1, sampleSelect1, fileInput1, inspectBtn1);
+        wireSlot(2, sampleSelect2, fileInput2, inspectBtn2);
+        wireInspectorControls();
+        compareBtn.addEventListener('click', runComparison);
+        document.getElementById('refreshHistoryBtn').addEventListener('click', loadHistory);
+
+        await runComparison();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
